@@ -1,0 +1,14 @@
+server:
+  port: 8097
+
+account:
+  #qq
+  qq: 123456
+  password: 1234567
+
+spring:
+  redis:
+    host: 127.0.0.1
+    port: 6378
+    password: 1234
+    database: 0
