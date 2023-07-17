@@ -35,7 +35,7 @@ public class InteractServiceImpl implements InteractService {
     private OkHttpClient client = new OkHttpClient().newBuilder()
             .connectTimeout(120, TimeUnit.SECONDS)
             .readTimeout(120, TimeUnit.SECONDS)
-            .connectionPool(new ConnectionPool(4, 120, TimeUnit.SECONDS))
+            .connectionPool(new ConnectionPool(2, 120, TimeUnit.SECONDS))
             .build();
 
     @Override
@@ -74,11 +74,13 @@ public class InteractServiceImpl implements InteractService {
             client = new OkHttpClient().newBuilder()
                     .connectTimeout(120, TimeUnit.SECONDS)
                     .readTimeout(120, TimeUnit.SECONDS)
-                    .connectionPool(new ConnectionPool(4, 120, TimeUnit.SECONDS))
+                    .connectionPool(new ConnectionPool(2, 120, TimeUnit.SECONDS))
                     .build();
         }
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(mediaType, "{\"messages\": "+prompt+"}");
+        JSONObject obj = new JSONObject();
+        obj.put("prompt", prompt);
+        RequestBody body = RequestBody.create(mediaType, obj.toJSONString());
         int retryCount = 0;
         boolean success = false;
         while (!success && retryCount < 2) { // 最多重试2次
