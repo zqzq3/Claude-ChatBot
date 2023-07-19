@@ -79,7 +79,7 @@ public class InteractServiceImpl implements InteractService {
         }
         MediaType mediaType = MediaType.parse("application/json");
         JSONObject obj = new JSONObject();
-        obj.put("prompt", prompt);
+        obj.put("prompt", prompt + "(回答不要超过200字)");
         RequestBody body = RequestBody.create(mediaType, obj.toJSONString());
         int retryCount = 0;
         boolean success = false;
