@@ -97,6 +97,7 @@ public class InteractServiceImpl implements InteractService {
                     String responseStr = responseBody.string();
                     JSONObject jsonObject = JSONObject.parseObject(responseStr);
                     content = jsonObject.getString("claude");
+                    content = content.replaceAll("\\r\\n|\\r|\\n", "");
                     callback.onCompletion(content);
                 }
                 success = true; // 成功获取到答案，退出重试
