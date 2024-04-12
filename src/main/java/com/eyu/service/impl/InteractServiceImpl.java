@@ -7,7 +7,6 @@ import com.eyu.handler.ChatCompletionCallback;
 import com.eyu.handler.RedisRateLimiter;
 import com.eyu.service.InteractService;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.ConnectionPool;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -18,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 交互服务impl
@@ -32,11 +30,11 @@ public class InteractServiceImpl implements InteractService {
     @Autowired
     RedisRateLimiter rateLimiter;
 
-    private OkHttpClient client = new OkHttpClient().newBuilder()
-            .connectTimeout(120, TimeUnit.SECONDS)
-            .readTimeout(120, TimeUnit.SECONDS)
-            .connectionPool(new ConnectionPool(4, 120, TimeUnit.SECONDS))
-            .build();
+    private final OkHttpClient client;
+
+    public InteractServiceImpl(OkHttpClient client) {
+        this.client = client;
+    }
 
     @Override
     public CompletableFuture<String> chat(ChatBO chatBO, String systemPrompt) throws ChatException {
@@ -70,20 +68,13 @@ public class InteractServiceImpl implements InteractService {
 
     public void getAnswer(String prompt, ChatCompletionCallback callback) throws InterruptedException {
         String content = "";
-        if (client == null) {
-            client = new OkHttpClient().newBuilder()
-                    .connectTimeout(120, TimeUnit.SECONDS)
-                    .readTimeout(120, TimeUnit.SECONDS)
-                    .connectionPool(new ConnectionPool(4, 120, TimeUnit.SECONDS))
-                    .build();
-        }
         MediaType mediaType = MediaType.parse("application/json");
         JSONObject obj = new JSONObject();
         obj.put("prompt", prompt + "(回答问题时不要超过50个字,回答要幽默)");
         RequestBody body = RequestBody.create(mediaType, obj.toJSONString());
         int retryCount = 0;
         boolean success = false;
-        while (!success && retryCount < 2) { // 最多重试2次
+        while (!success && retryCount < 1) { // 最多重试2次
             try {
                 Request request = new Request.Builder()
                         .url("http://127.0.0.1:8088/claude/chat")
@@ -115,13 +106,6 @@ public class InteractServiceImpl implements InteractService {
 
     public void reset(ChatCompletionCallback callback) throws InterruptedException {
         String content = "";
-        if (client == null) {
-            client = new OkHttpClient().newBuilder()
-                    .connectTimeout(120, TimeUnit.SECONDS)
-                    .readTimeout(120, TimeUnit.SECONDS)
-                    .connectionPool(new ConnectionPool(4, 120, TimeUnit.SECONDS))
-                    .build();
-        }
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(mediaType, "{}");
         int retryCount = 0;
